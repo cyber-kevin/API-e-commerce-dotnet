@@ -6,7 +6,13 @@ namespace RO.DevTest.Persistence;
 
 public class DefaultContext : IdentityDbContext<User> {
 
-    public DefaultContext() { }
+    public DbSet<Product> Products { get; set; }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
+        if (!optionsBuilder.IsConfigured) {
+            optionsBuilder.UseNpgsql("DefaultConnection");
+        }
+    }
 
     public DefaultContext(DbContextOptions<DefaultContext> options) : base(options) { }
 

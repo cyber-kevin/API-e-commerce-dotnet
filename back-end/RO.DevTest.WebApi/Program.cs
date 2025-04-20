@@ -1,12 +1,18 @@
 using RO.DevTest.Application;
 using RO.DevTest.Infrastructure.IoC;
 using RO.DevTest.Persistence.IoC;
+using RO.DevTest.Persistence.Repositories;
+using RO.DevTest.Persistence;
+using Microsoft.EntityFrameworkCore; 
 
 namespace RO.DevTest.WebApi;
 
 public class Program {
     public static void Main(string[] args) {
         var builder = WebApplication.CreateBuilder(args);
+
+        builder.Services.AddDbContext<DefaultContext>(options =>
+            options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
@@ -23,6 +29,9 @@ public class Program {
                 typeof(Program).Assembly
             );
         });
+
+        builder.Services.AddScoped<ProductRepository>();
+
 
         var app = builder.Build();
 
