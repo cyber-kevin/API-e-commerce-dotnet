@@ -21,5 +21,12 @@ public class DefaultContext : IdentityDbContext<User> {
         builder.ApplyConfigurationsFromAssembly(typeof(DefaultContext).Assembly);
 
         base.OnModelCreating(builder);
+
+        builder.Entity<Customer>(entity =>
+        {
+            entity.HasIndex(c => c.CPF).IsUnique();
+            entity.HasIndex(c => c.Email).IsUnique();
+        });
+
     }
 }

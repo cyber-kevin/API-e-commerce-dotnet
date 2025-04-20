@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using RO.DevTest.Persistence;
@@ -11,9 +12,11 @@ using RO.DevTest.Persistence;
 namespace RO.DevTest.Persistence.Migrations
 {
     [DbContext(typeof(DefaultContext))]
-    partial class DefaultContextModelSnapshot : ModelSnapshot
+    [Migration("20250420200250_AddUniqueConstraintToCpf")]
+    partial class AddUniqueConstraintToCpf
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -194,9 +197,6 @@ namespace RO.DevTest.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CPF")
-                        .IsUnique();
-
-                    b.HasIndex("Email")
                         .IsUnique();
 
                     b.ToTable("Customer");

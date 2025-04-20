@@ -18,7 +18,7 @@ namespace RO.DevTest.Persistence.Repositories
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();
-            }
+        }
     
         public async Task<Product?> GetByIdAsync(Guid id)
         {
@@ -41,10 +41,7 @@ namespace RO.DevTest.Persistence.Repositories
             if (existingProduct == null)
                 return false;
 
-            existingProduct.Name = product.Name;
-            existingProduct.Description = product.Description;
-            existingProduct.Price = product.Price;
-            existingProduct.QuantityStock = product.QuantityStock;
+            _context.Entry(existingProduct).CurrentValues.SetValues(product);
             existingProduct.ModifiedOn = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();

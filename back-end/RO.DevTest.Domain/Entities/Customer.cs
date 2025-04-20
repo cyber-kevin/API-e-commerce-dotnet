@@ -18,11 +18,13 @@ namespace RO.DevTest.Domain.Entities
         /// Email of the customer
         /// </summary>
         [MaxLength(100)]
+        [EmailAddress]
         public string Email { get; set; } = string.Empty;
 
         /// <summary>
         /// CPF of the customer
         /// </summary>
+        [Required]
         [MaxLength(14)]
         public string CPF { get; set; } = string.Empty;
 
