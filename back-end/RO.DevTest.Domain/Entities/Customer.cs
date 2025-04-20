@@ -1,4 +1,5 @@
 using RO.DevTest.Domain.Abstract;
+using System.ComponentModel.DataAnnotations;
 
 namespace RO.DevTest.Domain.Entities
 {
@@ -10,21 +11,25 @@ namespace RO.DevTest.Domain.Entities
         /// <summary>
         /// Name of the customer
         /// </summary>
+        [MaxLength(100)]
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
         /// Email of the customer
         /// </summary>
+        [MaxLength(100)]
         public string Email { get; set; } = string.Empty;
 
         /// <summary>
         /// CPF of the customer
         /// </summary>
+        [MaxLength(14)]
         public string CPF { get; set; } = string.Empty;
 
         /// <summary>
         /// Phone of the customer
         /// </summary>
+        [MaxLength(11)]
         public string Phone { get; set; } = string.Empty;
 
         /// <summary>

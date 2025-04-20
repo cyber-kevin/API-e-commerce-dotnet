@@ -1,6 +1,7 @@
 using RO.DevTest.Domain.Abstract;
+using System.ComponentModel.DataAnnotations;
 
-namespace RO.DevTest.Domain.Entities;
+namespace RO.DevTest.Domain.Entities
 
 {
     /// <summary>
@@ -11,6 +12,7 @@ namespace RO.DevTest.Domain.Entities;
         /// <summary>
         /// Name of the product
         /// </summary>
+        [MaxLength(100)]
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
@@ -31,6 +33,7 @@ namespace RO.DevTest.Domain.Entities;
         /// <summary>
         /// Code of the product
         /// </summary>
+        [MaxLength(50)]
         public string Code { get; set; } = string.Empty;
 
         /// <summary>
