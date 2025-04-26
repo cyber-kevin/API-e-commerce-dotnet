@@ -7,6 +7,7 @@ namespace RO.DevTest.Persistence;
 public class DefaultContext : IdentityDbContext<User> {
 
     public DbSet<Product> Products { get; set; }
+    public DbSet<Sale> Sales { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
         if (!optionsBuilder.IsConfigured) {

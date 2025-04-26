@@ -21,24 +21,14 @@ public class Sale : BaseEntity
     public virtual Customer Customer { get; set; } = null!;
 
     /// <summary>
-    /// Product ID of the sale
+    /// List of items in the sale
     /// </summary>
-    public Guid ProductId { get; set; }
+    public virtual List<ItemSale> Items { get; set; } = new();
 
     /// <summary>
-    /// Product of the sale
+    /// Total value of the sale (sum of item totals)
     /// </summary>
-    public virtual Product Product { get; set; } = null!;
-
-    /// <summary>
-    /// Quantity of the product sold in the sale
-    /// </summary>
-    public int Quantity { get; set; }
-
-    /// <summary>
-    /// Total value of the sale
-    /// </summary>
-    public decimal TotalValue { get; set; }
+    public decimal TotalValue => Items.Sum(item => item.TotalValue);
 
     /// <summary>
     /// Status of the sale
