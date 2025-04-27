@@ -10,6 +10,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using RO.DevTest.Persistence.Repositories;
+using RO.DevTest.Application.DTOs;
 
 namespace RO.DevTest.WebApi.Controllers;
 
@@ -17,10 +18,12 @@ namespace RO.DevTest.WebApi.Controllers;
 public class SaleController : ControllerBase
 {
     private readonly SaleRepository _saleRepository;
+    private readonly ProductRepository _productRepository;
 
-    public SaleController(SaleRepository saleRepository)
+    public SaleController(SaleRepository saleRepository, ProductRepository productRepository)
     {
         _saleRepository = saleRepository;
+        _productRepository = productRepository;
     }
 
     /// <summary>
@@ -31,7 +34,31 @@ public class SaleController : ControllerBase
     public async Task<IActionResult> GetAllSales()
     {
         var sales = await _saleRepository.GetAllAsync();
-        return Ok(sales);
+
+        if (sales == null || !sales.Any())
+        {
+            return Ok(sales);
+        }
+
+        var salesDto = sales.Select(sale => new SaleResponseDto
+        {
+            Id = sale.Id,
+            CustomerId = sale.CustomerId,
+            Items = sale.Items.Select(item => new ItemSaleResponseDto
+            {
+            Id = item.Id,
+            ProductId = item.ProductId,
+            Quantity = item.Quantity,
+            UnitPrice = item.UnitPrice
+            }).ToList(),
+            TotalValue = sale.TotalValue,
+            Status = sale.Status,
+            SaleDate = sale.SaleDate,
+            PaymentMethod = sale.PaymentMethod,
+            Observations = sale.Observations
+        }).ToList();
+
+        return Ok(salesDto);
     }
 
     /// <summary>
@@ -43,11 +70,30 @@ public class SaleController : ControllerBase
     public async Task<IActionResult> GetSaleById(Guid id)
     {
         var sale = await _saleRepository.GetByIdAsync(id);
+
         if (sale == null)
         {
             return NotFound();
         }
-        return Ok(sale);
+
+        var saleDto = new SaleResponseDto
+        {
+            Id = sale.Id,
+            CustomerId = sale.CustomerId,
+            Items = sale.Items.Select(item => new ItemSaleResponseDto
+            {
+            ProductId = item.ProductId,
+            Quantity = item.Quantity,
+            UnitPrice = item.UnitPrice
+            }).ToList(),
+            TotalValue = sale.TotalValue,
+            Status = sale.Status,
+            SaleDate = sale.SaleDate,
+            PaymentMethod = sale.PaymentMethod,
+            Observations = sale.Observations
+        };
+
+        return Ok(saleDto);
     }
 
     /// <summary>
@@ -56,17 +102,60 @@ public class SaleController : ControllerBase
     /// <param name="sale">Sale to create</param>
     /// <returns>Created sale</returns>
     [HttpPost]
-    public async Task<IActionResult> CreateSale([FromBody] Sale sale)
+    public async Task<IActionResult> CreateSale([FromBody] Sale saleRequest)
     {
-        if (sale == null)
+        if (saleRequest == null)
         {
-            return BadRequest("A venda não pode ser nula.");
+            return BadRequest("Dados inválidos.");
         }
+
+        var sale = new Sale
+        {
+            CustomerId = saleRequest.CustomerId,
+            Items = saleRequest.Items?.Select(item => new ItemSale
+            {
+                ProductId = item.ProductId,
+                Quantity = item.Quantity,
+                UnitPrice = item.UnitPrice
+            }).ToList() ?? new List<ItemSale>(),
+            PaymentMethod = saleRequest.PaymentMethod,
+            Observations = saleRequest.Observations,
+            SaleDate = DateTime.UtcNow,
+        };
 
         await _saleRepository.AddAsync(sale);
         await _saleRepository.SaveChangesAsync();
 
-        return CreatedAtAction(nameof(GetSaleById), new { id = sale.Id }, sale);
+        foreach (var item in sale.Items)
+        {
+            var product = await _productRepository.GetByIdAsync(item.ProductId);
+            if (product != null)
+            {
+                product.QuantityStock -= item.Quantity;
+                product.ItemSales.Add(item);
+                await _productRepository.UpdateAsync(product);
+                await _productRepository.SaveChangesAsync();
+            }
+        }
+
+        var saleResponseDto = new SaleResponseDto
+        {
+            Id = sale.Id,
+            CustomerId = sale.CustomerId,
+            Items = sale.Items.Select(item => new ItemSaleResponseDto
+            {
+                ProductId = item.ProductId,
+                Quantity = item.Quantity,
+                UnitPrice = item.UnitPrice
+            }).ToList(),
+            TotalValue = sale.TotalValue,
+            Status = sale.Status,
+            SaleDate = sale.SaleDate,
+            PaymentMethod = sale.PaymentMethod,
+            Observations = sale.Observations
+        };
+
+        return CreatedAtAction(nameof(GetSaleById), new { id = sale.Id }, saleResponseDto);
     }
 
     /// <summary>

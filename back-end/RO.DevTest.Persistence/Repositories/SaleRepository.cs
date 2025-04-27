@@ -19,12 +19,16 @@ namespace RO.DevTest.Persistence.Repositories
 
         public async Task<Sale?> GetByIdAsync(Guid id)
         {
-            return await _context.Set<Sale>().FindAsync(id);
+            return await _context.Sales
+                .Include(s => s.Items)
+                .FirstOrDefaultAsync(s => s.Id == id);
         }
 
         public async Task<IEnumerable<Sale>> GetAllAsync()
         {
-            return await _context.Set<Sale>().ToListAsync();
+            return await _context.Sales
+            .Include(s => s.Items)
+            .ToListAsync();
         }
 
         public async Task AddAsync(Sale sale)

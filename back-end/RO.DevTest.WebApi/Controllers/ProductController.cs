@@ -10,6 +10,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using RO.DevTest.Persistence.Repositories;
+using RO.DevTest.Application.DTOs;
 
 namespace RO.DevTest.WebApi.Controllers;
 
@@ -31,7 +32,25 @@ public class ProductController : ControllerBase {
     public async Task<IActionResult> GetAllProducts()
     {
         var products = await _productRepository.GetAllAsync();
-        return Ok(products);
+        var productDtos = products.Select(product => new ProductResponseDto
+        {
+            Id = product.Id,
+            Name = product.Name,
+            Description = product.Description,
+            Price = product.Price,
+            QuantityStock = product.QuantityStock,
+            Code = product.Code,
+            Active = product.Active,
+            ItemSales = product.ItemSales.Select(itemSale => new ItemSaleResponseDto
+            {
+            Id = itemSale.Id,
+            ProductId = itemSale.ProductId,
+            Quantity = itemSale.Quantity,
+            UnitPrice = itemSale.UnitPrice
+            }).ToList()
+        }).ToList();
+
+        return Ok(productDtos);
     }
 
     /// <summary>

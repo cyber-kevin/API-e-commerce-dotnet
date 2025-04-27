@@ -1,6 +1,7 @@
 using RO.DevTest.Domain.Abstract;
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace RO.DevTest.Domain.Entities;
 
@@ -16,7 +17,7 @@ public class ItemSale : BaseEntity
 
     /// <summary>
     /// Sale of the item sale
-    /// </summary>
+    [JsonIgnore]
     public virtual Sale Sale { get; set; } = null!;
 
     /// <summary>
@@ -25,7 +26,7 @@ public class ItemSale : BaseEntity
     public Guid ProductId { get; set; }
 
     /// <summary>
-    /// Product of the item sale
+    [JsonIgnore]
     /// </summary>
     public virtual Product Product { get; set; } = null!;
 
