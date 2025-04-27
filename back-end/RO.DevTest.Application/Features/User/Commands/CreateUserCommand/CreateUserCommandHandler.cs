@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.AspNetCore.Identity;
 using RO.DevTest.Application.Contracts.Infrastructure;
 using RO.DevTest.Domain.Exception;
+using System.Linq;
 
 namespace RO.DevTest.Application.Features.User.Commands.CreateUserCommand;
 
@@ -17,18 +18,21 @@ public class CreateUserCommandHandler(IIdentityAbstractor identityAbstractor) : 
         ValidationResult validationResult = await validator.ValidateAsync(request, cancellationToken);
 
         if(!validationResult.IsValid) {
-            throw new BadRequestException(validationResult);
+            var validationErrors = string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage));
+            throw new BadRequestException($"Erro de validação: {validationErrors}");
         }
 
         Domain.Entities.User newUser = request.AssignTo();
         IdentityResult userCreationResult = await _identityAbstractor.CreateUserAsync(newUser, request.Password);
         if(!userCreationResult.Succeeded) {
-            throw new BadRequestException(userCreationResult);
+            var identityErrors = string.Join("; ", userCreationResult.Errors.Select(e => e.Description));
+            throw new BadRequestException($"Falha ao criar usuário: {identityErrors}");
         }
 
         IdentityResult userRoleResult = await _identityAbstractor.AddToRoleAsync(newUser, request.Role);
         if(!userRoleResult.Succeeded) {
-            throw new BadRequestException(userRoleResult);
+            var roleErrors = string.Join("; ", userRoleResult.Errors.Select(e => e.Description));
+            throw new BadRequestException($"Falha ao adicionar papel ao usuário: {roleErrors}");
         }
 
         return new CreateUserResult(newUser);

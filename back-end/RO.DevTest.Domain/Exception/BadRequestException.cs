@@ -1,18 +1,17 @@
-﻿using System.Net;
-using FluentValidation.Results;
-using Microsoft.AspNetCore.Identity;
+﻿using RO.DevTest.Domain.Exception;
 
-namespace RO.DevTest.Domain.Exception;
-
-// [TODO] Standardize requests
-// [TODO] Display a semantic error message to the client
-/// <summary>
-/// Returns a <see cref="HttpStatusCode.BadRequest"/> to
-/// the request
-/// </summary>
-public class BadRequestException : ApiException {
-    public override HttpStatusCode StatusCode => HttpStatusCode.BadRequest;
-    public BadRequestException(IdentityResult result) : base(result) { }
-    public BadRequestException(string error) : base(error) { }
-    public BadRequestException(ValidationResult validationResult) : base(validationResult) { }
+namespace RO.DevTest.Domain.Exception
+{
+    /// <summary>
+    /// Exceção para requisições inválidas
+    /// </summary>
+    public class BadRequestException : System.Exception
+    {
+        public BadRequestException() : base() { }
+        
+        public BadRequestException(string message) : base(message) { }
+        
+        public BadRequestException(string message, System.Exception innerException) 
+            : base(message, innerException) { }
+    }
 }

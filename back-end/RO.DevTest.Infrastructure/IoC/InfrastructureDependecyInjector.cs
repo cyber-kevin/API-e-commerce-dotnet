@@ -19,11 +19,6 @@ public static class InfrastructureDependecyInjector {
     /// The <see cref="IServiceCollection"/> with dependencies injected
     /// </returns>
     public static IServiceCollection InjectInfrastructureDependencies(this IServiceCollection services) {
-        services.AddDefaultIdentity<User>()
-            .AddRoles<IdentityRole>()
-            .AddEntityFrameworkStores<DefaultContext>()
-            .AddDefaultTokenProviders();
-
         services.AddScoped<IIdentityAbstractor, IdentityAbstractor>();
 
         return services;
