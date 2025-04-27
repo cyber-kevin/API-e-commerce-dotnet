@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\RO.DevTest.Application\RO.DevTest.Application.csproj" />
     <ProjectReference Include="..\RO.DevTest.Domain\RO.DevTest.Domain.csproj" />
   </ItemGroup>
 

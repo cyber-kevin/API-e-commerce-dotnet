@@ -8,6 +8,7 @@ public class DefaultContext : IdentityDbContext<User> {
 
     public DbSet<Product> Products { get; set; }
     public DbSet<Sale> Sales { get; set; }
+    public DbSet<Customer> Customers { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
         if (!optionsBuilder.IsConfigured) {
@@ -27,7 +28,11 @@ public class DefaultContext : IdentityDbContext<User> {
         {
             entity.HasIndex(c => c.CPF).IsUnique();
             entity.HasIndex(c => c.Email).IsUnique();
+            
+            entity.HasOne(c => c.User)
+                  .WithOne(u => u.Customer)
+                  .HasForeignKey<Customer>(c => c.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
-
     }
 }

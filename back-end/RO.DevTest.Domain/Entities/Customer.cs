@@ -1,5 +1,7 @@
 using RO.DevTest.Domain.Abstract;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Identity;
 
 namespace RO.DevTest.Domain.Entities
 {
@@ -38,7 +40,18 @@ namespace RO.DevTest.Domain.Entities
         /// Address of the customer
         /// </summary>
         public string Address { get; set; } = string.Empty;
-        
+
+        /// <summary>
+        /// Foreign key for the related User
+        /// </summary>
+        [Required]
+        public string UserId { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Navigation property for the related User
+        /// </summary>
+        [ForeignKey("UserId")]
+        public virtual User? User { get; set; }
 
         public Customer() : base() { }
     }

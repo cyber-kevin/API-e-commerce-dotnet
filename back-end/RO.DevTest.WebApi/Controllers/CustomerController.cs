@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NSwag.Annotations;
-using RO.DevTest.Application.Contracts.Persistance.Repositories;
+using RO.DevTest.Domain.Contracts.Persistance.Repositories;
 using RO.DevTest.Domain.Entities;
 using RO.DevTest.Persistence;
 using System;

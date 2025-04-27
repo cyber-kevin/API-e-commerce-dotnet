@@ -1,6 +1,6 @@
-﻿using System.Linq.Expressions;
+using System.Linq.Expressions;
 
-namespace RO.DevTest.Application.Contracts.Persistance.Repositories;
+namespace RO.DevTest.Domain.Contracts.Persistance.Repositories;
 
 public interface IBaseRepository<T> where T : class {
 

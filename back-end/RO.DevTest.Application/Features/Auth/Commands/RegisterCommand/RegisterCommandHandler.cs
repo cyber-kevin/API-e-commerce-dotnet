@@ -4,23 +4,26 @@ using RO.DevTest.Application.Contracts.Infrastructure;
 using RO.DevTest.Domain.Entities;
 using RO.DevTest.Domain.Enums;
 using RO.DevTest.Domain.Exception;
+using RO.DevTest.Persistence.Repositories;
 
 namespace RO.DevTest.Application.Features.Auth.Commands.RegisterCommand;
 
 public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterResponse>
 {
     private readonly IIdentityAbstractor _identityAbstractor;
+    private readonly CustomerRepository _customerRepository;
 
-    public RegisterCommandHandler(IIdentityAbstractor identityAbstractor)
+    public RegisterCommandHandler(IIdentityAbstractor identityAbstractor, CustomerRepository customerRepository)
     {
         _identityAbstractor = identityAbstractor;
+        _customerRepository = customerRepository;
     }
 
     public async Task<RegisterResponse> Handle(RegisterCommand request, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
+        if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password) || string.IsNullOrWhiteSpace(request.CPF))
         {
-            throw new BadRequestException("Email e senha são obrigatórios.");
+            throw new BadRequestException("Email, senha e CPF são obrigatórios.");
         }
 
         var existingUser = await _identityAbstractor.FindUserByEmailAsync(request.Email);
@@ -46,6 +49,19 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterR
         }
 
         await _identityAbstractor.AddToRoleAsync(user, UserRoles.Customer);
+
+        var customer = new Customer
+        {
+            Name = user.Name,
+            Email = user.Email,
+            CPF = request.CPF,
+            Phone = request.Phone,
+            Address = request.Address,
+            UserId = user.Id
+        };
+
+        await _customerRepository.AddAsync(customer);
+        await _customerRepository.SaveChangesAsync();
 
         return new RegisterResponse
         {
