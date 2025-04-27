@@ -8,9 +8,12 @@ using RO.DevTest.Domain.Entities;
 using RO.DevTest.Persistence;
 using System;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using RO.DevTest.Persistence.Repositories;
 using RO.DevTest.Application.DTOs;
+using RO.DevTest.Domain.Common.Parameters;
+using RO.DevTest.Domain.Common.Models;
 
 namespace RO.DevTest.WebApi.Controllers;
 
@@ -27,29 +30,37 @@ public class SaleController : ControllerBase
     }
 
     /// <summary>
-    /// Get all sales
+    /// Get a paged list of sales with filtering and sorting.
     /// </summary>
-    /// <returns>List of sales</returns>
+    /// <param name="parameters">Pagination, filtering, and sorting parameters.</param>
+    /// <returns>Paged list of sales.</returns>
     [HttpGet]
-    public async Task<IActionResult> GetAllSales()
+    public async Task<IActionResult> GetAllSales([FromQuery] PaginationParameters parameters)
     {
-        var sales = await _saleRepository.GetAllAsync();
+        var pagedSales = await _saleRepository.GetPagedAsync(parameters, includes: s => s.Items);
 
-        if (sales == null || !sales.Any())
+        if (pagedSales.Items == null || !pagedSales.Items.Any())
         {
-            return Ok(sales);
+            var emptyMetadata = new PaginationMetadata(
+                pagedSales.CurrentPage,
+                pagedSales.TotalPages,
+                pagedSales.PageSize,
+                pagedSales.TotalCount
+            );
+            Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(emptyMetadata));
+            return Ok(new List<SaleResponseDto>());
         }
 
-        var salesDto = sales.Select(sale => new SaleResponseDto
+        var salesDto = pagedSales.Items.Select(sale => new SaleResponseDto
         {
             Id = sale.Id,
             CustomerId = sale.CustomerId,
             Items = sale.Items.Select(item => new ItemSaleResponseDto
             {
-            Id = item.Id,
-            ProductId = item.ProductId,
-            Quantity = item.Quantity,
-            UnitPrice = item.UnitPrice
+                Id = item.Id,
+                ProductId = item.ProductId,
+                Quantity = item.Quantity,
+                UnitPrice = item.UnitPrice
             }).ToList(),
             TotalValue = sale.TotalValue,
             Status = sale.Status,
@@ -57,6 +68,15 @@ public class SaleController : ControllerBase
             PaymentMethod = sale.PaymentMethod,
             Observations = sale.Observations
         }).ToList();
+
+        var metadata = new PaginationMetadata(
+            pagedSales.CurrentPage,
+            pagedSales.TotalPages,
+            pagedSales.PageSize,
+            pagedSales.TotalCount
+        );
+
+        Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(metadata));
 
         return Ok(salesDto);
     }
@@ -82,9 +102,9 @@ public class SaleController : ControllerBase
             CustomerId = sale.CustomerId,
             Items = sale.Items.Select(item => new ItemSaleResponseDto
             {
-            ProductId = item.ProductId,
-            Quantity = item.Quantity,
-            UnitPrice = item.UnitPrice
+                ProductId = item.ProductId,
+                Quantity = item.Quantity,
+                UnitPrice = item.UnitPrice
             }).ToList(),
             TotalValue = sale.TotalValue,
             Status = sale.Status,
