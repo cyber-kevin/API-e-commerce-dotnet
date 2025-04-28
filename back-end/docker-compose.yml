@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:latest
+    container_name: rodevtest_db
+    environment:
+      POSTGRES_DB: rodevtest
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+    ports:
+      - "5432:5432" # Expose port 5432 for potential external access/debugging
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  app:
+    container_name: rodevtest_api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:8080" # Map host port 5000 to container port 8080
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development # Or Production, depending on needs
+      ConnectionStrings__DefaultConnection: "Server=db;Port=5432;Database=rodevtest;User Id=postgres;Password=root;"
+      Jwt__Key: "R0DevT3stS3cr3tK3yF0rJWTAuthenT1cation!12345" # Use environment variable for sensitive data
+      Jwt__Issuer: "RO.DevTest.Api"
+      Jwt__Audience: "RO.DevTest.Users"
+      ASPNETCORE_URLS: http://+:8080 # Ensure the app listens on the correct port inside the container
+    depends_on:
+      - db
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
