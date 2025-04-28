@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using RO.DevTest.Domain.Exception;
+using Microsoft.Extensions.Logging;
 
 namespace RO.DevTest.WebApi;
 
@@ -34,7 +35,6 @@ public class Program {
         .AddEntityFrameworkStores<DefaultContext>()
         .AddDefaultTokenProviders();
 
-        // Configuração do JWT
         builder.Services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -80,6 +80,24 @@ public class Program {
 
         var app = builder.Build();
 
+        using (var scope = app.Services.CreateScope())
+        {
+            var services = scope.ServiceProvider;
+            try
+            {
+                var context = services.GetRequiredService<DefaultContext>();
+                if (context.Database.GetPendingMigrations().Any())
+                {
+                    context.Database.Migrate();
+                }
+            }
+            catch (Exception ex)
+            {
+                var logger = services.GetRequiredService<ILogger<Program>>();
+                logger.LogError(ex, "Ocorreu um erro ao aplicar as migrações do banco de dados.");
+            }
+        }
+
         app.UseExceptionHandler(exceptionHandlerApp =>
         {
             exceptionHandlerApp.Run(async context =>
@@ -93,18 +111,24 @@ public class Program {
 
                 if (exception != null)
                 {
-                    if (exception is BadRequestException badRequestException)
+                    if (app.Environment.IsDevelopment())
+                    {
+                         var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+                         logger.LogError(exception, "Unhandled exception.");
+                         detail = exception.ToString();
+                    }
+
+                    if (exception is Npgsql.PostgresException pgEx && pgEx.SqlState == "42P01")
+                    {
+                         statusCode = HttpStatusCode.InternalServerError;
+                         title = "Erro de Banco de Dados";
+                         detail = "A estrutura do banco de dados parece estar incompleta ou desatualizada. Verifique se as migrações foram aplicadas corretamente.";
+                    }
+                    else if (exception is BadRequestException badRequestException)
                     {
                         statusCode = HttpStatusCode.BadRequest;
                         title = "Requisição Inválida";
                         detail = badRequestException.Message;
-                    }
-                    else
-                    {
-                        if (app.Environment.IsDevelopment())
-                        {
-                            detail = exception.ToString();
-                        }
                     }
                 }
 
@@ -127,7 +151,6 @@ public class Program {
             app.UseSwagger();
             app.UseSwaggerUI();
         } else {
-        
         }
 
         app.UseHttpsRedirection();

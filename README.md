@@ -31,7 +31,7 @@ A maneira mais fácil de executar este projeto localmente é usando Docker e Doc
     ```
 3.  **Construa e Execute os Contêineres:** Execute o seguinte comando para construir as imagens Docker (se ainda não existirem) e iniciar os contêineres em segundo plano (`-d`):
     ```bash
-    sudo docker-compose up -d --build
+    docker-compose up -d --build
     ```
     *Nota: Pode ser necessário usar `sudo` dependendo da configuração do Docker em seu sistema Linux.*
 

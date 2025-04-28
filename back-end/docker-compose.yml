@@ -9,10 +9,15 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: root
     ports:
-      - "5432:5432" # Expose port 5432 for potential external access/debugging
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   app:
     container_name: rodevtest_api
@@ -20,18 +25,18 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "5000:8080" # Map host port 5000 to container port 8080
+      - "5000:8080"
     environment:
-      ASPNETCORE_ENVIRONMENT: Development # Or Production, depending on needs
+      ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__DefaultConnection: "Server=db;Port=5432;Database=rodevtest;User Id=postgres;Password=root;"
-      Jwt__Key: "R0DevT3stS3cr3tK3yF0rJWTAuthenT1cation!12345" # Use environment variable for sensitive data
+      Jwt__Key: "R0DevT3stS3cr3tK3yF0rJWTAuthenT1cation!12345"
       Jwt__Issuer: "RO.DevTest.Api"
       Jwt__Audience: "RO.DevTest.Users"
-      ASPNETCORE_URLS: http://+:8080 # Ensure the app listens on the correct port inside the container
+      ASPNETCORE_URLS: http://+:8080
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:
   postgres_data:
-
