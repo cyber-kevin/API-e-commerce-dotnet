@@ -4,6 +4,7 @@ using RO.DevTest.Persistence.IoC;
 using RO.DevTest.Persistence.Repositories;
 using RO.DevTest.Persistence;
 using RO.DevTest.Domain.Entities;
+using RO.DevTest.Domain.Contracts.Persistance.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -56,7 +57,6 @@ public class Program {
             };
         });
 
-        // Configurar ProblemDetails para tratamento de erro consistente
         builder.Services.AddProblemDetails();
 
         builder.Services.AddControllers();
@@ -76,7 +76,7 @@ public class Program {
 
         builder.Services.AddScoped<ProductRepository>();
         builder.Services.AddScoped<CustomerRepository>();
-        builder.Services.AddScoped<SaleRepository>();
+        builder.Services.AddScoped<ISaleRepository, SaleRepository>();
 
         var app = builder.Build();
 
